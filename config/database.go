@@ -1,9 +1,10 @@
 package config
 
 import (
+	"Atlantis-Backend/models"
 	"fmt"
 	"os"
-	"Atlantis-Backend/models"
+
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
