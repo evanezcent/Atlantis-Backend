@@ -1,11 +1,11 @@
-package configuration
+package config
 
 import (
 	"fmt"
 	"os"
-
+	"Atlantis-Backend/models"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -20,23 +20,25 @@ func InitConnection() *gorm.DB {
 	dbPASS := os.Getenv("DB_PASS")
 	dbHOST := os.Getenv("DB_HOST")
 	dbNAME := os.Getenv("DB_NAME")
+	dbPORT := os.Getenv("DB_PORT")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8&parseTime=True&loc=Local", dbUSER, dbPASS, dbHOST, dbNAME)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	connectionName := fmt.Sprintf("host=%v port=%v user=%v dbname=%v password=%v sslmode=disable", dbHOST, dbPORT, dbUSER, dbNAME, dbPASS)
+	fmt.Println(connectionName)
+	db, err := gorm.Open(postgres.Open(connectionName), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect into database")
 	}
 
-	// db.AutoMigrate(&model.Book{}, &model.User{})
+	db.AutoMigrate(&models.User{})
 	return db
 }
 
 // CloseConnection databases
 func CloseConnection(db *gorm.DB) {
-	dbSQL, err := db.DB()
+	dbPOSTGRE, err := db.DB()
 	if err != nil {
 		panic("Failed to close database connection")
 	}
 
-	dbSQL.Close()
+	dbPOSTGRE.Close()
 }
