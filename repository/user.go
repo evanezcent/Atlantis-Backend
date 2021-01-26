@@ -14,7 +14,7 @@ type UserRepository interface {
 	UpdateUser(user models.User) models.User
 	VerifyCredential(email string, pass string) interface{}
 	IsDuplicate(tipe string, val string) (tx *gorm.DB)
-	FindEmail(email string) models.User
+	FindField(tipe string, val string) models.User
 	ProfileUser(id string) models.User
 }
 
@@ -66,9 +66,9 @@ func (db *userConnection) IsDuplicate(tipe string, val string) (tx *gorm.DB) {
 	return db.connection.Where(tipe+" = ?", val).Take(&user)
 }
 
-func (db *userConnection) FindEmail(email string) models.User {
+func (db *userConnection) FindField(tipe string, val string) models.User {
 	var user models.User
-	db.connection.Where("email = ?", email).Take(&user)
+	db.connection.Where(tipe+" = ?", val).Take(&user)
 
 	return user
 }

@@ -17,7 +17,7 @@ type UserService interface {
 	RegisterUser(user dto.UserCreateDTO) models.User
 	UpdateUser(user dto.UserUpdateDTO) models.User
 	GetUser(userID string) models.User
-	FindEmail(email string) models.User
+	FindByField(tipe string, val string) models.User
 	IsDuplicateField(tipe string, val string) bool
 }
 
@@ -70,8 +70,8 @@ func (service *userService) RegisterUser(user dto.UserCreateDTO) models.User {
 	return res
 }
 
-func (service *userService) FindEmail(email string) models.User {
-	return service.userRepository.FindEmail(email)
+func (service *userService) FindByField(tipe string, val string) models.User {
+	return service.userRepository.FindField(tipe, val)
 }
 
 func (service *userService) IsDuplicateField(tipe string, val string) bool {

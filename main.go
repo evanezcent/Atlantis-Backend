@@ -5,6 +5,7 @@ import (
 	"Atlantis-Backend/controller"
 	"Atlantis-Backend/repository"
 	"Atlantis-Backend/service"
+	"Atlantis-Backend/middleware"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -23,13 +24,13 @@ func main() {
 	fmt.Println("Starting apps...")
 	r := gin.Default()
 
-	authRoutes := r.Group("api/v1/user")
+	authRoutes := r.Group("atlantis-api/v1/user")
 	{
 		authRoutes.POST("/login", userController.Login)
 		authRoutes.POST("/register", userController.Register)
 	}
 
-	userRoutes := r.Group("api/v1/user", middleware.AuthorizeJWT(jwtService))
+	userRoutes := r.Group("atlantis-api/v1/user", middleware.AuthorizeJWT(jwtService))
 	{
 		userRoutes.GET("/get", userController.Get)
 		userRoutes.PUT("/update", userController.Update)

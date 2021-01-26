@@ -108,10 +108,15 @@ func (c *userController) Update(ctx *gin.Context) {
 		panic(errToken.Error())
 	}
 
-	if !c.userService.IsDuplicateField("email", newUser.Email) {
+	userEmail := c.userService.FindByField("email", newUser.Email)
+	userPhone := c.userService.FindByField("phone", newUser.Phone)
+
+	if userEmail.ID != id {
+		fmt.Println(userEmail.ID, id)
 		res := helper.ResponseFailed("Email has ben registered", "Failed", nil)
 		ctx.JSON(http.StatusConflict, res)
-	} else if !c.userService.IsDuplicateField("phone", newUser.Phone) {
+	} else if userPhone.ID != id {
+		fmt.Println(userEmail.ID, id)
 		res := helper.ResponseFailed("Phone has been registered", "Failed", nil)
 		ctx.JSON(http.StatusConflict, res)
 	} else {
