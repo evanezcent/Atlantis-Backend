@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"Atlantis-Backend/model"
+	"Atlantis-Backend/models"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -10,37 +10,37 @@ import (
 
 // UserRepository as interface that cover all function
 type UserRepository interface {
-	InsertUser(iser model.User) model.User
-	UpdateUser(iser model.User) model.User
+	InsertUser(iser models.User) models.User
+	UpdateUser(iser models.User) models.User
 	VerifyCredential(email string, pass string) interface{}
 	IsDuplicateEmail(email string) (tx *gorm.DB)
-	FindEmail(email string) model.User
-	ProfileUser(id string) model.User
+	FindEmail(email string) models.User
+	ProfileUser(id string) models.User
 }
 
 type userConnection struct {
 	connection *gorm.DB
 }
 
-// NewUserRepo used to create new Instance of user repository
-func NewUserRepo(db *gorm.DB) UserRepository {
+// NewUserRepository used to create new Instance of user repository
+func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userConnection{
 		connection: db,
 	}
 }
 
-func (db *userConnection) InsertUser(user model.User) model.User {
+func (db *userConnection) InsertUser(user models.User) models.User {
 	user.Password = hashPassword([]byte(user.Password))
 	db.connection.Save(&user)
 
 	return user
 }
 
-func (db *userConnection) UpdateUser(user model.User) model.User {
+func (db *userConnection) UpdateUser(user models.User) models.User {
 	if user.Password != "" {
 		user.Password = hashPassword([]byte(user.Password))
 	} else {
-		var tempUser model.User
+		var tempUser models.User
 		db.connection.Find(&tempUser, user.ID)
 		user.Password = tempUser.Password
 	}
@@ -50,7 +50,7 @@ func (db *userConnection) UpdateUser(user model.User) model.User {
 }
 
 func (db *userConnection) VerifyCredential(email string, password string) interface{} {
-	var user model.User
+	var user models.User
 
 	res := db.connection.Where("email = ?", email).Take(&user)
 	if res.Error == nil {
@@ -61,21 +61,21 @@ func (db *userConnection) VerifyCredential(email string, password string) interf
 }
 
 func (db *userConnection) IsDuplicateEmail(email string) (tx *gorm.DB) {
-	var user model.User
+	var user models.User
 
 	return db.connection.Where("email = ?", email).Take(&user)
 }
 
-func (db *userConnection) FindEmail(email string) model.User {
-	var user model.User
+func (db *userConnection) FindEmail(email string) models.User {
+	var user models.User
 	db.connection.Where("email = ?", email).Take(&user)
 
 	return user
 }
 
-func (db *userConnection) ProfileUser(id string) model.User {
-	var user model.User
-	db.connection.Preload("Books").Preload("Books.User").Find(&user, id)
+func (db *userConnection) ProfileUser(id string) models.User {
+	var user models.User
+	db.connection.Find(&user, id)
 
 	return user
 }
