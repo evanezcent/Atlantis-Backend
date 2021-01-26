@@ -18,7 +18,7 @@ type UserService interface {
 	UpdateUser(user dto.UserUpdateDTO) models.User
 	GetUser(userID string) models.User
 	FindEmail(email string) models.User
-	IsDuplicateEmail(email string) bool
+	IsDuplicateField(tipe string, val string) bool
 }
 
 type userService struct {
@@ -74,8 +74,8 @@ func (service *userService) FindEmail(email string) models.User {
 	return service.userRepository.FindEmail(email)
 }
 
-func (service *userService) IsDuplicateEmail(email string) bool {
-	res := service.userRepository.IsDuplicateEmail(email)
+func (service *userService) IsDuplicateField(tipe string, val string) bool {
+	res := service.userRepository.IsDuplicate(tipe, val)
 
 	return !(res.Error == nil)
 }

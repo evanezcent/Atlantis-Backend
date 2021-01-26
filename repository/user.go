@@ -10,10 +10,10 @@ import (
 
 // UserRepository as interface that cover all function
 type UserRepository interface {
-	InsertUser(iser models.User) models.User
-	UpdateUser(iser models.User) models.User
+	InsertUser(user models.User) models.User
+	UpdateUser(user models.User) models.User
 	VerifyCredential(email string, pass string) interface{}
-	IsDuplicateEmail(email string) (tx *gorm.DB)
+	IsDuplicate(tipe string, val string) (tx *gorm.DB)
 	FindEmail(email string) models.User
 	ProfileUser(id string) models.User
 }
@@ -60,10 +60,10 @@ func (db *userConnection) VerifyCredential(email string, password string) interf
 	return nil
 }
 
-func (db *userConnection) IsDuplicateEmail(email string) (tx *gorm.DB) {
+func (db *userConnection) IsDuplicate(tipe string, val string) (tx *gorm.DB) {
 	var user models.User
 
-	return db.connection.Where("email = ?", email).Take(&user)
+	return db.connection.Where(tipe+" = ?", val).Take(&user)
 }
 
 func (db *userConnection) FindEmail(email string) models.User {

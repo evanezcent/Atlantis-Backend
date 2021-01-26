@@ -9,7 +9,7 @@ type User struct {
 	ID        uint64    `gorm:"primary_key;auto_increment" json:"id"`
 	Name      string    `gorm:"type:varchar(255)" json:"name"`
 	Image     string    `gorm:"type:varchar(255);null" json:"image"`
-	Phone     int8      `gorm:"uniqueIndex" json:"phone"`
+	Phone     string    `gorm:"uniqueIndex" json:"phone"`
 	Email     string    `gorm:"uniqueIndex;type:varchar(255)" json:"email"`
 	Password  string    `gorm:"->;<-; not null" json:"-"`
 	Token     string    `gorm:"-" json:"token,omitempty"`
