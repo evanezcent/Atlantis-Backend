@@ -3,9 +3,9 @@ package main
 import (
 	"Atlantis-Backend/config"
 	"Atlantis-Backend/controller"
+	"Atlantis-Backend/middleware"
 	"Atlantis-Backend/repository"
 	"Atlantis-Backend/service"
-	"Atlantis-Backend/middleware"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -23,6 +23,7 @@ var (
 func main() {
 	fmt.Println("Starting apps...")
 	r := gin.Default()
+	r.Static("/uploads", "./uploads")
 
 	authRoutes := r.Group("atlantis-api/v1/user")
 	{
