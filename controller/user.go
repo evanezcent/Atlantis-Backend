@@ -10,6 +10,8 @@ import (
 	"Atlantis-Backend/models"
 	"Atlantis-Backend/service"
 
+	"path/filepath"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
@@ -120,6 +122,11 @@ func (c *userController) Update(ctx *gin.Context) {
 		res := helper.ResponseFailed("Phone has been registered", "Failed", nil)
 		ctx.JSON(http.StatusConflict, res)
 	} else {
+		file, _, err := ctx.Request.FormFile("images")
+		if file != nil && err == nil {
+			imgURL := upload(ctx)
+			newUser.Image = imgURL
+		}
 		newUser.ID = id
 		updateUser := c.userService.UpdateUser(newUser)
 		res := helper.ResponseSucces(true, "success", updateUser)
@@ -140,3 +147,49 @@ func (c *userController) Get(ctx *gin.Context) {
 	res := helper.ResponseSucces(true, "success", user)
 	ctx.JSON(http.StatusOK, res)
 }
+
+func upload(ctx *gin.Context) string {
+	file, errForm := ctx.FormFile("images")
+	if errForm != nil {
+		panic(errForm.Error())
+	}
+
+	var extension = filepath.Ext(file.Filename)
+	filename := helper.RandomString(11) + extension
+	name := "uploads/" + filename
+	fmt.Println(filename)
+	path := name
+	if err := ctx.SaveUploadedFile(file, path); err != nil {
+		panic(err.Error())
+	}
+
+	return path
+	// res := helper.ResponseSucces(true, "success", path)
+	// ctx.JSON(http.StatusOK, res)
+}
+
+// func (c *userController) Upload(ctx *gin.Context) {
+// 	form, errForm := ctx.MultipartForm()
+// 	if errForm != nil {
+// 		panic(errForm.Error())
+// 	}
+
+// 	files := form.File["images"]
+// 	fmt.Println(filepath.Dir("/uploads/"))
+
+// 	var listPath []string
+
+// 	for _, file := range files {
+// 		var extension = filepath.Ext(file.Filename)
+// 		filename := helper.RandomString(11) + extension
+// 		name := "uploads/" + filename
+// 		fmt.Println(filename)
+// 		path := name
+// 		if err := ctx.SaveUploadedFile(file, path); err != nil {
+// 			panic(err.Error())
+// 		}
+// 		listPath = append(listPath, path)
+// 	}
+// 	res := helper.ResponseSucces(true, "success", listPath)
+// 	ctx.JSON(http.StatusOK, res)
+// }
