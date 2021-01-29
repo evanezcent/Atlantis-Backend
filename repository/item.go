@@ -11,13 +11,14 @@ type ItemRepository interface {
 	InsertItem(item models.Item) models.Item
 	UpdateItem(item models.Item) models.Item
 	UploadImage(item models.ImageItem) models.ImageItem
+	GetAllItem() []models.Item
 }
 
 type itemConnection struct {
 	connection *gorm.DB
 }
 
-// NewItemRepository used to create new Instance of user repository
+// NewItemRepository used to create new Instance of item repository
 func NewItemRepository(db *gorm.DB) ItemRepository {
 	return &itemConnection{
 		connection: db,
@@ -42,4 +43,11 @@ func (db *itemConnection) UpdateItem(item models.Item) models.Item {
 	db.connection.Save(&item)
 
 	return item
+}
+
+func (db *itemConnection) GetAllItem() []models.Item {
+	var items []models.Item
+	db.connection.Preload("ImageItem").Find(&items)
+
+	return items
 }
