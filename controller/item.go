@@ -28,9 +28,10 @@ type itemController struct {
 	itemService service.ItemService
 }
 
-type result struct {
-	obj    models.Item
-	images []string
+// Result is to handle insert and update
+type Result struct {
+	obj    models.Item `json:"item"`
+	images []string    `json:"images"`
 }
 
 // NewItemController is like constructor of the models
@@ -77,7 +78,6 @@ func (c *itemController) Add(ctx *gin.Context) {
 		var extension = filepath.Ext(file.Filename)
 		filename := helper.RandomString(11) + extension
 		name := "uploads/" + filename
-		fmt.Println(filename)
 		path := name
 
 		if err := ctx.SaveUploadedFile(file, path); err != nil {
@@ -96,9 +96,15 @@ func (c *itemController) Add(ctx *gin.Context) {
 		listImage = append(listImage, path)
 	}
 
-	var data result
+	var data Result
 	data.obj = successItem
 	data.images = listImage
+	fmt.Println(data.images)
+	// res, err := json.Marshal(data)
+	// if err != nil {
+	//     fmt.Println(err)
+	//     return
+	// }
 
 	response := helper.ResponseSucces(true, "success", data)
 	ctx.JSON(http.StatusOK, response)
