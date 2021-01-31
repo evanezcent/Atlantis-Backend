@@ -12,7 +12,9 @@ import (
 
 // ItemService interface for Item service
 type ItemService interface {
-	InsertUpdate(item dto.ItemCreateDTO, tipe string) models.Item
+	Insert(item dto.ItemCreateDTO) models.Item
+	Update(item dto.ItemUpdateDTO) models.Item
+	UploadImage(item dto.ItemImageCreateDTO) models.ImageItem
 	GetAll() []models.Item
 	AuthorizeForEdit(userID string, ItemID uint64) bool
 }
@@ -28,7 +30,7 @@ func NewItemService(repo repository.ItemRepository) ItemService {
 	}
 }
 
-func (service *itemService) InsertUpdate(item dto.ItemCreateDTO, tipe string) models.Item {
+func (service *itemService) Insert(item dto.ItemCreateDTO) models.Item {
 	newItem := models.Item{}
 	err := smapping.FillStruct(&newItem, smapping.MapFields(&item))
 
@@ -36,13 +38,31 @@ func (service *itemService) InsertUpdate(item dto.ItemCreateDTO, tipe string) mo
 		log.Fatalf("Failed map %v: ", err)
 	}
 
-	var res models.Item
-	if tipe == "insert" {
+	res := service.itemRepository.InsertItem(newItem)
+	return res
+}
 
-		res = service.itemRepository.InsertItem(newItem)
-	} else {
-		res = service.itemRepository.UpdateItem(newItem)
+func (service *itemService) UploadImage(item dto.ItemImageCreateDTO) models.ImageItem {
+	newImage := models.ImageItem{}
+	err := smapping.FillStruct(&newImage, smapping.MapFields(&item))
+
+	if err != nil {
+		log.Fatalf("Failed map %v: ", err)
 	}
+
+	res := service.itemRepository.UploadImage(newImage)
+	return res
+}
+
+func (service *itemService) Update(item dto.ItemUpdateDTO) models.Item {
+	newItem := models.Item{}
+	err := smapping.FillStruct(&newItem, smapping.MapFields(&item))
+
+	if err != nil {
+		log.Fatalf("Failed map %v: ", err)
+	}
+
+	res := service.itemRepository.UpdateItem(newItem)
 	return res
 }
 

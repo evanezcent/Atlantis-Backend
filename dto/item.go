@@ -6,7 +6,7 @@ type ItemCreateDTO struct {
 	SpesificDate  string `form:"spesific_date" json:"spesific_date" binding:"required"`
 	SpesificPlace string `form:"spesific_place" json:"spesific_place" binding:"required"`
 	Description   string `json:"description" form:"description" binding:"required"`
-	UserID        string `json:"user_id" form:"user_id" binding:"required"`
+	UserID        string `json:"user_id" form:"user_id"`
 	IsDone        bool   `json:"is_done" form:"is_done"`
 }
 
