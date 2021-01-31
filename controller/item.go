@@ -28,6 +28,11 @@ type itemController struct {
 	itemService service.ItemService
 }
 
+type result struct {
+	obj    models.Item
+	images []string
+}
+
 // NewItemController is like constructor of the models
 func NewItemController(jwtService service.JWTService, itemService service.ItemService) ItemController {
 	return &itemController{
@@ -91,8 +96,11 @@ func (c *itemController) Add(ctx *gin.Context) {
 		listImage = append(listImage, path)
 	}
 
-	successItem = append(successItem, listImage)
-	response := helper.ResponseSucces(true, "success", successItem)
+	var data result
+	data.obj = successItem
+	data.images = listImage
+
+	response := helper.ResponseSucces(true, "success", data)
 	ctx.JSON(http.StatusOK, response)
 }
 
