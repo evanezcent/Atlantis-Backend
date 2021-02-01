@@ -43,6 +43,7 @@ func main() {
 	itemRoutes := r.Group("atlantis-api/v1/item", middleware.AuthorizeJWT(jwtService))
 	{
 		itemRoutes.POST("/insert", itemController.Add)
+		itemRoutes.PUT("/confirm/:id", itemController.Confirm)
 	}
 
 	r.Run()

@@ -13,6 +13,7 @@ type ItemRepository interface {
 	UploadImage(item models.ImageItem) models.ImageItem
 	GetAllItem() []models.Item
 	FindItemByID(id uint64) models.Item
+	ConfirmItem(id string) models.Item
 }
 
 type itemConnection struct {
@@ -42,6 +43,15 @@ func (db *itemConnection) UpdateItem(item models.Item) models.Item {
 	var tempItem models.Item
 	db.connection.Find(&tempItem, item.ID)
 	db.connection.Save(&item)
+
+	return item
+}
+
+func (db *itemConnection) ConfirmItem(id string) models.Item {
+	var item models.Item
+	db.connection.Find(&item, id)
+	item.IsDone = !item.IsDone
+	db.connection.Preload("ImageItem").Save(&item)
 
 	return item
 }

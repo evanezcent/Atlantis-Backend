@@ -70,7 +70,13 @@ func (c *itemController) Add(ctx *gin.Context) {
 		panic(errForm.Error())
 	}
 
-	files := form.File["images"]
+	files, errFile := form.File["images"]
+	if !errFile {
+		res := helper.ResponseFailed("Null images", "Failed to upload images", nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+
+		return
+	}
 	var listImage []string
 
 	// Loop for images upload
@@ -100,18 +106,22 @@ func (c *itemController) Add(ctx *gin.Context) {
 	data.obj = successItem
 	data.images = listImage
 	fmt.Println(data.images)
-	// res, err := json.Marshal(data)
-	// if err != nil {
-	//     fmt.Println(err)
-	//     return
-	// }
 
 	response := helper.ResponseSucces(true, "success", data)
 	ctx.JSON(http.StatusOK, response)
 }
 
 func (c *itemController) Confirm(ctx *gin.Context) {
+	authHeader := ctx.GetHeader("Authorization")
+	token, errToken := c.jwtService.ValidateToken(authHeader)
+	if errToken != nil && token == nil {
+		panic(errToken.Error())
+	}
 
+	itemID := ctx.Param("id")
+	res := c.itemService.ConfirmItem(itemID)
+	response := helper.ResponseSucces(true, "success", res)
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (c *itemController) Update(ctx *gin.Context) {
