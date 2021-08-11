@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"Atlantis-Backend/models"
+	"Atlantis-Backend/models" 
 	"fmt"
 	"net/http"
 
@@ -20,7 +20,7 @@ type ItemController interface {
 	Add(ctx *gin.Context)
 	Confirm(ctx *gin.Context)
 	Update(ctx *gin.Context)
-	Get(ctx *gin.Context)
+	All(ctx *gin.Context)
 }
 
 type itemController struct {
@@ -128,15 +128,14 @@ func (c *itemController) Update(ctx *gin.Context) {
 
 }
 
-func (c *itemController) Get(ctx *gin.Context) {
-	// authHeader := ctx.GetHeader("Authorization")
-	// token, errToken := c.jwtService.ValidateToken(authHeader)
-	// if errToken != nil {
-	// 	panic(errToken.Error())
-	// }
+func (c *itemController) All(ctx *gin.Context) {
+	authHeader := ctx.GetHeader("Authorization")
+	_, errToken := c.jwtService.ValidateToken(authHeader)
+	if errToken != nil {
+		panic(errToken.Error())
+	}
 
-	// claims := token.Claims.(jwt.MapClaims)
-	// user := c.userService.GetUser(fmt.Sprintf("%v", claims["userID"]))
-	// res := helper.ResponseSucces(true, "success", user)
-	// ctx.JSON(http.StatusOK, res)
+	items := c.itemService.GetAll()  
+	res := helper.ResponseSucces(true, "success", items)
+	ctx.JSON(http.StatusOK, res)
 }
