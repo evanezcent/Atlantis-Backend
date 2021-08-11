@@ -104,8 +104,7 @@ func (c *itemController) Add(ctx *gin.Context) {
 
 	var data Result
 	data.obj = successItem
-	data.images = listImage
-	fmt.Println(data.images)
+	data.images = listImage 
 
 	response := helper.ResponseSucces(true, "success", data)
 	ctx.JSON(http.StatusOK, response)
