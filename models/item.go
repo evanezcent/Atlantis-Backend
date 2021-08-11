@@ -12,3 +12,8 @@ type Item struct {
 	IsDone        bool   `gorm:"default:false" json:"is_done"`
 	DeletedAt     string `gorm:"null" json:"deleted_at"`
 }
+
+type Combined struct {
+	Item   Item
+	Images []ImageItem
+}

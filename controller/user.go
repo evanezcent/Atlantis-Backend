@@ -113,11 +113,11 @@ func (c *userController) Update(ctx *gin.Context) {
 	userEmail := c.userService.FindByField("email", newUser.Email)
 	userPhone := c.userService.FindByField("phone", newUser.Phone)
 
-	if userEmail.ID != id {
+	if (userEmail.ID != id && userEmail != models.User{}) {
 		fmt.Println(userEmail.ID, id)
-		res := helper.ResponseFailed("Email has ben registered", "Failed", nil)
+		res := helper.ResponseFailed("Email has been registered", "Failed", nil)
 		ctx.JSON(http.StatusConflict, res)
-	} else if userPhone.ID != id {
+	} else if (userPhone.ID != id && userPhone != models.User{}) {
 		fmt.Println(userEmail.ID, id)
 		res := helper.ResponseFailed("Phone has been registered", "Failed", nil)
 		ctx.JSON(http.StatusConflict, res)
@@ -132,7 +132,6 @@ func (c *userController) Update(ctx *gin.Context) {
 		res := helper.ResponseSucces(true, "success", updateUser)
 		ctx.JSON(http.StatusOK, res)
 	}
-
 }
 
 func (c *userController) Get(ctx *gin.Context) {

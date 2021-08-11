@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"Atlantis-Backend/models"
+	"Atlantis-Backend/models" 
 	"fmt"
 	"net/http"
 
@@ -20,7 +20,7 @@ type ItemController interface {
 	Add(ctx *gin.Context)
 	Confirm(ctx *gin.Context)
 	Update(ctx *gin.Context)
-	Get(ctx *gin.Context)
+	All(ctx *gin.Context)
 }
 
 type itemController struct {
@@ -70,7 +70,13 @@ func (c *itemController) Add(ctx *gin.Context) {
 		panic(errForm.Error())
 	}
 
-	files := form.File["images"]
+	files, errFile := form.File["images"]
+	if !errFile {
+		res := helper.ResponseFailed("Null images", "Failed to upload images", nil)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, res)
+
+		return
+	}
 	var listImage []string
 
 	// Loop for images upload
@@ -100,33 +106,36 @@ func (c *itemController) Add(ctx *gin.Context) {
 	data.obj = successItem
 	data.images = listImage
 	fmt.Println(data.images)
-	// res, err := json.Marshal(data)
-	// if err != nil {
-	//     fmt.Println(err)
-	//     return
-	// }
 
 	response := helper.ResponseSucces(true, "success", data)
 	ctx.JSON(http.StatusOK, response)
 }
 
 func (c *itemController) Confirm(ctx *gin.Context) {
+	authHeader := ctx.GetHeader("Authorization")
+	token, errToken := c.jwtService.ValidateToken(authHeader)
+	if errToken != nil && token == nil {
+		panic(errToken.Error())
+	}
 
+	itemID := ctx.Param("id")
+	res := c.itemService.ConfirmItem(itemID)
+	response := helper.ResponseSucces(true, "success", res)
+	ctx.JSON(http.StatusOK, response)
 }
 
 func (c *itemController) Update(ctx *gin.Context) {
 
 }
 
-func (c *itemController) Get(ctx *gin.Context) {
-	// authHeader := ctx.GetHeader("Authorization")
-	// token, errToken := c.jwtService.ValidateToken(authHeader)
-	// if errToken != nil {
-	// 	panic(errToken.Error())
-	// }
+func (c *itemController) All(ctx *gin.Context) {
+	authHeader := ctx.GetHeader("Authorization")
+	_, errToken := c.jwtService.ValidateToken(authHeader)
+	if errToken != nil {
+		panic(errToken.Error())
+	}
 
-	// claims := token.Claims.(jwt.MapClaims)
-	// user := c.userService.GetUser(fmt.Sprintf("%v", claims["userID"]))
-	// res := helper.ResponseSucces(true, "success", user)
-	// ctx.JSON(http.StatusOK, res)
+	items := c.itemService.GetAll()  
+	res := helper.ResponseSucces(true, "success", items)
+	ctx.JSON(http.StatusOK, res)
 }

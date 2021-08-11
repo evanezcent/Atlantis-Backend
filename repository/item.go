@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"Atlantis-Backend/models"
+	"Atlantis-Backend/models" 
 
 	"gorm.io/gorm"
 )
@@ -11,12 +11,18 @@ type ItemRepository interface {
 	InsertItem(item models.Item) models.Item
 	UpdateItem(item models.Item) models.Item
 	UploadImage(item models.ImageItem) models.ImageItem
-	GetAllItem() []models.Item
+	GetAllItem() []models.Combined
+	GetAllItemImage(itemID uint64) []models.ImageItem
 	FindItemByID(id uint64) models.Item
+	ConfirmItem(id string) models.Item
 }
 
 type itemConnection struct {
 	connection *gorm.DB
+}
+type Combined struct {
+	item   models.Item
+	images []models.ImageItem
 }
 
 // NewItemRepository used to create new Instance of item repository
@@ -46,11 +52,34 @@ func (db *itemConnection) UpdateItem(item models.Item) models.Item {
 	return item
 }
 
-func (db *itemConnection) GetAllItem() []models.Item {
-	var items []models.Item
-	db.connection.Preload("ImageItem").Find(&items)
+func (db *itemConnection) ConfirmItem(id string) models.Item {
+	var item models.Item
+	db.connection.Find(&item, id)
+	item.IsDone = !item.IsDone
+	db.connection.Preload("ImageItem").Save(&item)
 
-	return items
+	return item
+}
+
+func (db *itemConnection) GetAllItem() []models.Combined {
+	var items []models.Item
+	var result []models.Combined
+
+	db.connection.Preload("User").Find(&items)
+
+	for _, element := range items {
+		images := db.GetAllItemImage(element.ID) 
+		result = append(result, models.Combined{Item: element, Images: images})
+	}
+
+	return result
+}
+
+func (db *itemConnection) GetAllItemImage(itemID uint64) []models.ImageItem {
+	var images []models.ImageItem
+	db.connection.Where("item_id = ?", itemID).Find(&images) 
+
+	return images
 }
 
 func (db *itemConnection) FindItemByID(itemID uint64) models.Item {

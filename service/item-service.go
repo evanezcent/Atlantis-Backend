@@ -15,8 +15,9 @@ type ItemService interface {
 	Insert(item dto.ItemCreateDTO) models.Item
 	Update(item dto.ItemUpdateDTO) models.Item
 	UploadImage(item dto.ItemImageCreateDTO) models.ImageItem
-	GetAll() []models.Item
+	GetAll() []models.Combined
 	AuthorizeForEdit(userID string, ItemID uint64) bool
+	ConfirmItem(ItemID string) models.Item
 }
 
 type itemService struct {
@@ -66,13 +67,19 @@ func (service *itemService) Update(item dto.ItemUpdateDTO) models.Item {
 	return res
 }
 
-func (service *itemService) GetAll() []models.Item {
-	return service.itemRepository.GetAllItem()
+func (service *itemService) GetAll() []models.Combined {
+	res := service.itemRepository.GetAllItem()
+	return res
 }
 
 func (service *itemService) AuthorizeForEdit(userID string, itemID uint64) bool {
-	Item := service.itemRepository.FindItemByID(itemID)
-	id := fmt.Sprintf(Item.UserID)
+	item := service.itemRepository.FindItemByID(itemID)
+	id := fmt.Sprintf(item.UserID)
 
 	return userID == id
+}
+
+func (service *itemService) ConfirmItem(itemID string) models.Item {
+	item := service.itemRepository.ConfirmItem(itemID)
+	return item
 }
