@@ -139,9 +139,12 @@ func (c *itemController) All(ctx *gin.Context) {
 
 	//check query
 	userID := ctx.Query("user_id")
+	query := ctx.Query("q")
 	if userID != "" {
 		uid,_ := strconv.ParseUint(ctx.Query("user_id"), 10, 64)
 		items = c.itemService.GetByUser(uid)  
+	}else if query != ""{
+		items = c.itemService.GetByQuery(query)  
 	}else{
 		items = c.itemService.GetAll()  
 	}
