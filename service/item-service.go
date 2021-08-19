@@ -16,6 +16,7 @@ type ItemService interface {
 	Update(item dto.ItemUpdateDTO) models.Item
 	UploadImage(item dto.ItemImageCreateDTO) models.ImageItem
 	GetAll() []models.Combined
+	GetByUser(userID uint64) []models.Combined
 	Get(itemID uint64) models.Combined
 	AuthorizeForEdit(userID string, ItemID uint64) bool
 	ConfirmItem(ItemID string) models.Item
@@ -88,4 +89,9 @@ func (service *itemService) ConfirmItem(itemID string) models.Item {
 func (service *itemService) Get(itemID uint64) models.Combined {
 	item := service.itemRepository.FindItemByID(itemID)
 	return item
+}
+
+func (service *itemService) GetByUser(userID uint64) []models.Combined {
+	res := service.itemRepository.FindItemByUser(userID)
+	return res
 }

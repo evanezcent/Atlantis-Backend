@@ -14,6 +14,7 @@ type ItemRepository interface {
 	GetAllItem() []models.Combined
 	GetAllItemImage(itemID uint64) []models.ImageItem
 	FindItemByID(id uint64) models.Combined
+	FindItemByUser(id uint64) []models.Combined
 	ConfirmItem(id string) models.Item
 }
 
@@ -86,6 +87,20 @@ func (db *itemConnection) FindItemByID(itemID uint64) models.Combined {
 
 	images := db.GetAllItemImage(item.ID) 
 	result = models.Combined{Item: item, Images: images} 
+
+	return result
+}
+
+func (db *itemConnection) FindItemByUser(userID uint64) []models.Combined {
+	var items []models.Item
+	var result []models.Combined
+
+	db.connection.Where("user_id = ?", userID).Preload("User").Find(&items)
+
+	for _, element := range items {
+		images := db.GetAllItemImage(element.ID) 
+		result = append(result, models.Combined{Item: element, Images: images})
+	}
 
 	return result
 }

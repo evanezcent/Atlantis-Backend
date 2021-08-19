@@ -45,7 +45,7 @@ func main() {
 		itemRoutes.POST("/insert", itemController.Add)
 		itemRoutes.GET("/all", itemController.All)
 		itemRoutes.PUT("/confirm/:id", itemController.Confirm)
-		itemRoutes.get("/:id", itemController.Get)
+		itemRoutes.GET("/:id", itemController.Get)
 	}
 
 	r.Run()

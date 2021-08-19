@@ -131,12 +131,21 @@ func (c *itemController) Update(ctx *gin.Context) {
 
 func (c *itemController) All(ctx *gin.Context) {
 	authHeader := ctx.GetHeader("Authorization")
+	var items []models.Combined
 	_, errToken := c.jwtService.ValidateToken(authHeader)
 	if errToken != nil {
 		panic(errToken.Error())
 	}
 
-	items := c.itemService.GetAll()  
+	//check query
+	userID := ctx.Query("user_id")
+	if userID != "" {
+		uid,_ := strconv.ParseUint(ctx.Query("user_id"), 10, 64)
+		items = c.itemService.GetByUser(uid)  
+	}else{
+		items = c.itemService.GetAll()  
+	}
+
 	res := helper.ResponseSucces(true, "success", items)
 	ctx.JSON(http.StatusOK, res)
 }
@@ -148,7 +157,7 @@ func (c *itemController) Get(ctx *gin.Context) {
 		panic(errToken.Error())
 	}
 	
-	itemID := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	itemID,_ := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	items := c.itemService.Get(itemID)  
 	res := helper.ResponseSucces(true, "success", items)
 	ctx.JSON(http.StatusOK, res)
