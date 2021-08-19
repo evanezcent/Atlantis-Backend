@@ -13,17 +13,13 @@ type ItemRepository interface {
 	UploadImage(item models.ImageItem) models.ImageItem
 	GetAllItem() []models.Combined
 	GetAllItemImage(itemID uint64) []models.ImageItem
-	FindItemByID(id uint64) models.Item
+	FindItemByID(id uint64) models.Combined
 	ConfirmItem(id string) models.Item
 }
 
 type itemConnection struct {
 	connection *gorm.DB
-}
-type Combined struct {
-	item   models.Item
-	images []models.ImageItem
-}
+} 
 
 // NewItemRepository used to create new Instance of item repository
 func NewItemRepository(db *gorm.DB) ItemRepository {
@@ -82,9 +78,14 @@ func (db *itemConnection) GetAllItemImage(itemID uint64) []models.ImageItem {
 	return images
 }
 
-func (db *itemConnection) FindItemByID(itemID uint64) models.Item {
+func (db *itemConnection) FindItemByID(itemID uint64) models.Combined {
 	var item models.Item
+	var result models.Combined
+
 	db.connection.Preload("User").Find(&item, itemID)
 
-	return item
+	images := db.GetAllItemImage(item.ID) 
+	result = models.Combined{Item: item, Images: images} 
+
+	return result
 }

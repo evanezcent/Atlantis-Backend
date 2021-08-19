@@ -4,6 +4,7 @@ import (
 	"Atlantis-Backend/models" 
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"Atlantis-Backend/dto"
 	"Atlantis-Backend/helper"
@@ -21,6 +22,7 @@ type ItemController interface {
 	Confirm(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	All(ctx *gin.Context)
+	Get(ctx *gin.Context)
 }
 
 type itemController struct {
@@ -135,6 +137,19 @@ func (c *itemController) All(ctx *gin.Context) {
 	}
 
 	items := c.itemService.GetAll()  
+	res := helper.ResponseSucces(true, "success", items)
+	ctx.JSON(http.StatusOK, res)
+}
+
+func (c *itemController) Get(ctx *gin.Context) {
+	authHeader := ctx.GetHeader("Authorization")
+	_, errToken := c.jwtService.ValidateToken(authHeader)
+	if errToken != nil {
+		panic(errToken.Error())
+	}
+	
+	itemID := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	items := c.itemService.Get(itemID)  
 	res := helper.ResponseSucces(true, "success", items)
 	ctx.JSON(http.StatusOK, res)
 }
