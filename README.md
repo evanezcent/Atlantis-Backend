@@ -1,7 +1,7 @@
 # Atlantis-Backend
 
 ## Preparation
-1. `go mod download`
+1. Install all modules `go mod download`
 2. Install postgresql
 3. Set the env
 4. Then go far
