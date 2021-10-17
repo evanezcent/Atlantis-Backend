@@ -1,7 +1,8 @@
 package repository
 
 import (
-	"Atlantis-Backend/models" 
+	"Atlantis-Backend/models"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -21,7 +22,7 @@ type ItemRepository interface {
 
 type itemConnection struct {
 	connection *gorm.DB
-} 
+}
 
 // NewItemRepository used to create new Instance of item repository
 func NewItemRepository(db *gorm.DB) ItemRepository {
@@ -66,7 +67,7 @@ func (db *itemConnection) GetAllItem() []models.Combined {
 	db.connection.Preload("User").Find(&items)
 
 	for _, element := range items {
-		images := db.GetAllItemImage(element.ID) 
+		images := db.GetAllItemImage(element.ID)
 		result = append(result, models.Combined{Item: element, Images: images})
 	}
 
@@ -75,7 +76,10 @@ func (db *itemConnection) GetAllItem() []models.Combined {
 
 func (db *itemConnection) GetAllItemImage(itemID uint64) []models.ImageItem {
 	var images []models.ImageItem
-	db.connection.Where("item_id = ?", itemID).Find(&images) 
+	// convert item id to string
+	id := strconv.Itoa(int(itemID))
+
+	db.connection.Where("item_id = ?", id).Find(&images)
 
 	return images
 }
@@ -86,8 +90,8 @@ func (db *itemConnection) FindItemByID(itemID uint64) models.Combined {
 
 	db.connection.Preload("User").Find(&item, itemID)
 
-	images := db.GetAllItemImage(item.ID) 
-	result = models.Combined{Item: item, Images: images} 
+	images := db.GetAllItemImage(item.ID)
+	result = models.Combined{Item: item, Images: images}
 
 	return result
 }
@@ -99,7 +103,7 @@ func (db *itemConnection) FindItemByUser(userID uint64) []models.Combined {
 	db.connection.Where("user_id = ?", userID).Preload("User").Find(&items)
 
 	for _, element := range items {
-		images := db.GetAllItemImage(element.ID) 
+		images := db.GetAllItemImage(element.ID)
 		result = append(result, models.Combined{Item: element, Images: images})
 	}
 
@@ -109,10 +113,10 @@ func (db *itemConnection) FindItemByUser(userID uint64) []models.Combined {
 func (db *itemConnection) FindItemByQuery(query string) []models.Combined {
 	var items []models.Item
 	var result []models.Combined
-	db.connection.Where("title LIKE ?", ("%"+query+"%")).Or("spesific_place LIKE ?", ("%"+query+"%")).Or("description LIKE ?", ("%"+query+"%")).Preload("User").Find(&items)
+	db.connection.Where("title LIKE ?", ("%"+query+"%")).Or("spesific_place LIKE ?", ("%"+query+"%")).Or("description LIKE ?", ("%" + query + "%")).Preload("User").Find(&items)
 
 	for _, element := range items {
-		images := db.GetAllItemImage(element.ID) 
+		images := db.GetAllItemImage(element.ID)
 		result = append(result, models.Combined{Item: element, Images: images})
 	}
 
