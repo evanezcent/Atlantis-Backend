@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"Atlantis-Backend/models" 
+	"Atlantis-Backend/models"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,8 +12,8 @@ import (
 
 	"path/filepath"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 )
 
 // ItemController interface for login, register, read, and update user
@@ -45,6 +45,7 @@ func NewItemController(jwtService service.JWTService, itemService service.ItemSe
 }
 
 func (c *itemController) Add(ctx *gin.Context) {
+	// validate request input using DTO
 	var newItem dto.ItemCreateDTO
 	err := ctx.ShouldBind(&newItem)
 
@@ -55,23 +56,30 @@ func (c *itemController) Add(ctx *gin.Context) {
 		return
 	}
 
+	// get header for authorization
 	authHeader := ctx.GetHeader("Authorization")
 	token, errToken := c.jwtService.ValidateToken(authHeader)
+
+	// validate user token
 	if errToken != nil {
 		panic(errToken.Error())
 	}
 
+	// get id from token
 	claims := token.Claims.(jwt.MapClaims)
 	id := fmt.Sprintf("%v", claims["userID"])
 
+	// insert data into database
 	newItem.UserID = id
 	successItem := c.itemService.Insert(newItem)
 
+	// init for multipart form
 	form, errForm := ctx.MultipartForm()
 	if errForm != nil {
 		panic(errForm.Error())
 	}
 
+	// check is there is an images
 	files, errFile := form.File["images"]
 	if !errFile {
 		res := helper.ResponseFailed("Null images", "Failed to upload images", nil)
@@ -79,48 +87,65 @@ func (c *itemController) Add(ctx *gin.Context) {
 
 		return
 	}
+
 	var listImage []string
 
 	// Loop for images upload
 	for _, file := range files {
+		// get file extension
 		var extension = filepath.Ext(file.Filename)
+
+		// generate random name
 		filename := helper.RandomString(11) + extension
+
+		// make the path for upload
 		name := "uploads/" + filename
 		path := name
 
+		// save file name into folder path
 		if err := ctx.SaveUploadedFile(file, path); err != nil {
 			panic(err.Error())
 		}
 
+		// validate image
 		var image dto.ItemImageCreateDTO
-		image.ItemID = id
+		image.ItemID = strconv.FormatUint(successItem.ID, 10)
 		image.URL = "localhost:8080/" + name
+
+		// upload the image
 		res := c.itemService.UploadImage(image)
 		if (res == models.ImageItem{}) {
 			res := helper.ResponseFailed("Failed to upload image", "Failed", nil)
 			ctx.JSON(http.StatusConflict, res)
 		}
 
+		// save the result path of the image
 		listImage = append(listImage, path)
 	}
 
+	// send success response data
 	var data Result
 	data.obj = successItem
-	data.images = listImage 
+	data.images = listImage
 
 	response := helper.ResponseSucces(true, "success", data)
 	ctx.JSON(http.StatusOK, response)
 }
 
 func (c *itemController) Confirm(ctx *gin.Context) {
+	// get header for authorization
 	authHeader := ctx.GetHeader("Authorization")
 	token, errToken := c.jwtService.ValidateToken(authHeader)
+
+	// validate user token
 	if errToken != nil && token == nil {
 		panic(errToken.Error())
 	}
 
+	// get params
 	itemID := ctx.Param("id")
 	res := c.itemService.ConfirmItem(itemID)
+
 	response := helper.ResponseSucces(true, "success", res)
 	ctx.JSON(http.StatusOK, response)
 }
@@ -130,23 +155,29 @@ func (c *itemController) Update(ctx *gin.Context) {
 }
 
 func (c *itemController) All(ctx *gin.Context) {
-	authHeader := ctx.GetHeader("Authorization")
 	var items []models.Combined
+
+	// get header for authorization
+	authHeader := ctx.GetHeader("Authorization")
+
+	// validate user token
 	_, errToken := c.jwtService.ValidateToken(authHeader)
 	if errToken != nil {
 		panic(errToken.Error())
 	}
 
-	//check query
+	// check is request has query
 	userID := ctx.Query("user_id")
 	query := ctx.Query("q")
+
 	if userID != "" {
-		uid,_ := strconv.ParseUint(ctx.Query("user_id"), 10, 64)
-		items = c.itemService.GetByUser(uid)  
-	}else if query != ""{
-		items = c.itemService.GetByQuery(query)  
-	}else{
-		items = c.itemService.GetAll()  
+		// parse id into uint 64
+		uid, _ := strconv.ParseUint(ctx.Query("user_id"), 10, 64)
+		items = c.itemService.GetByUser(uid)
+	} else if query != "" {
+		items = c.itemService.GetByQuery(query)
+	} else {
+		items = c.itemService.GetAll()
 	}
 
 	res := helper.ResponseSucces(true, "success", items)
@@ -154,14 +185,20 @@ func (c *itemController) All(ctx *gin.Context) {
 }
 
 func (c *itemController) Get(ctx *gin.Context) {
+	// get header for authorization
 	authHeader := ctx.GetHeader("Authorization")
+
+	// validate user token
 	_, errToken := c.jwtService.ValidateToken(authHeader)
 	if errToken != nil {
 		panic(errToken.Error())
 	}
-	
-	itemID,_ := strconv.ParseUint(ctx.Param("id"), 10, 64)
-	items := c.itemService.Get(itemID)  
+
+	// parse id into uint 64
+	itemID, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+
+	items := c.itemService.Get(itemID)
+	fmt.Println(items)
 	res := helper.ResponseSucces(true, "success", items)
 	ctx.JSON(http.StatusOK, res)
 }
